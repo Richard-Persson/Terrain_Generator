@@ -11,8 +11,9 @@ window.onload = function init(){
 
   //Laste inn bilder
   const loader = new THREE.TextureLoader()
-  const texture = loader.load('./static/terrain.png')
-  const height = loader.load('./static/heightMap.png')
+  const texture = loader.load('./static/terrain2.jpeg')
+  const height = loader.load('./static/heightMap2.png')
+  const sphereImage = loader.load('./static/terrain1.png')
 
   //GUI
   const gui = new dat.GUI()
@@ -27,10 +28,10 @@ window.onload = function init(){
   )
 
   //Setter posisjonen
-  camera.position.set(0,3,4)
+  camera.position.set(0,5,20)
 
   //Lager akse og grid for hjelp
-  const gridHelper = new THREE.GridHelper(10)
+  const gridHelper = new THREE.GridHelper(50)
   scene.add(gridHelper)
   const axesHelper = new THREE.AxesHelper(5)
   scene.add(axesHelper)
@@ -40,30 +41,45 @@ window.onload = function init(){
   scene.add(orbit)
 
 
+  
   //Lys
-  const pointLight = new THREE.PointLight(0xffffff,2)
+  const pointLight = new THREE.PointLight(0xffffff,100)
   scene.add(pointLight)
   pointLight.position.x = 1
-  pointLight.position.y = 4
+  pointLight.position.y =20 
   pointLight.position.z = 1
+  
+  //GUI for lys posisjon
+  gui.add(pointLight.position,"x")
+  gui.add(pointLight.position,"y")
+  gui.add(pointLight.position,"z")
 
+  //For å se posisjonen på lyset
+  const plHelper = new THREE.PointLightHelper(pointLight, 2)
+  scene.add(plHelper)
 
   //Sphere
   const sphereGeometry = new THREE.SphereGeometry()
-  const sphereMaterial = new THREE.MeshPhongMaterial({color:0x98765})
+  const sphereMaterial = new THREE.MeshPhongMaterial({
+    color:'red',
+    map:sphereImage,
+  })
   const sphere = new THREE.Mesh(sphereGeometry,sphereMaterial)
   scene.add(sphere)
-  sphere.position.y = 3
+  sphere.position.y = 5
   sphere.position.x = 3
 
   
+
   
   //Plane
-  const planeGeometry = new THREE.PlaneGeometry(5,5,64,64)
+  const planeGeometry = new THREE.PlaneGeometry(50,50,128,128)
   const planeMaterial = new THREE.MeshStandardMaterial({
     map:texture,
     displacementMap:height,
+    displacementScale:10,
   })
+
   const plane = new THREE.Mesh(planeGeometry,planeMaterial)
   scene.add(plane)
   plane.rotation.x = -0.5*Math.PI 
@@ -74,7 +90,6 @@ window.onload = function init(){
   //Animerer scenen
   function animate(time) {
 
-    sphere.rotation.x = time/1000
     sphere.rotation.y = time/1000
 
     renderer.render(scene,camera)
