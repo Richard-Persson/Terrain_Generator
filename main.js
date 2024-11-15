@@ -58,6 +58,11 @@ window.onload = function init(){
   const plHelper = new THREE.PointLightHelper(pointLight, 2)
   scene.add(plHelper)
 
+
+  //Bakgrunn
+  renderer.setClearColor('#96c9d7')
+
+
   //Sphere
   const sphereGeometry = new THREE.SphereGeometry()
   const sphereMaterial = new THREE.MeshPhongMaterial({
