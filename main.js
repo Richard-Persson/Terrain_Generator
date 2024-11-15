@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui'
+import vertexShader from './shaders/vertexShader'
 
 
 window.onload = function init(){
@@ -28,7 +29,7 @@ window.onload = function init(){
   )
 
   //Setter posisjonen
-  camera.position.set(0,5,20)
+  camera.position.set(30,40,40)
 
   //Lager akse og grid for hjelp
   const gridHelper = new THREE.GridHelper(50)
@@ -38,7 +39,6 @@ window.onload = function init(){
 
   //Lager OrbitControls
   const orbit = new OrbitControls(camera,renderer.domElement) 
-  scene.add(orbit)
 
 
   
@@ -78,24 +78,38 @@ window.onload = function init(){
 
   
   //Plane
+
+  const uniforms = {
+    bumpTexture:{value: height},
+    bumpScale: {value: 26},
+  }
   const planeGeometry = new THREE.PlaneGeometry(100,100,128,128)
-  const planeMaterial = new THREE.MeshStandardMaterial({
+  //NY
+  const planeMaterial = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: document.getElementById('vertexShader').textContent,
+    fragmentShader: document.getElementById('fragmentShader').textContent,
+
+  })
+  //GAMMEL
+  /**const planeMaterial = new THREE.MeshStandardMaterial({
     map:texture,
     displacementMap:height,
     displacementScale:26,
-  })
+  })**/
 
   const plane = new THREE.Mesh(planeGeometry,planeMaterial)
   scene.add(plane)
   plane.rotation.x = -0.5*Math.PI 
 
 
-  gui.add(planeMaterial, 'displacementScale', 0, 100).name('Displacement Scale');
+  gui.add(uniforms.bumpScale, 'value', 0, 100).name('Displacement Scale');
 
 
   //Animerer scenen
   function animate(time) {
 
+    requestAnimationFrame(animate)
     sphere.rotation.y = time/1000
 
     renderer.render(scene,camera)
