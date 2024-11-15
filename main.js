@@ -43,20 +43,20 @@ window.onload = function init(){
 
   
   //Lys
-  const pointLight = new THREE.PointLight(0xffffff,100)
-  scene.add(pointLight)
-  pointLight.position.x = 1
-  pointLight.position.y =20 
-  pointLight.position.z = 1
+  const directinalLight = new THREE.DirectionalLight(0xffffff,1)
+  scene.add(directinalLight)
+  directinalLight.position.x = 1
+  directinalLight.position.y =20 
+  directinalLight.position.z = 1
   
   //GUI for lys posisjon
-  gui.add(pointLight.position,"x")
-  gui.add(pointLight.position,"y")
-  gui.add(pointLight.position,"z")
+  gui.add(directinalLight.position,"x")
+  gui.add(directinalLight.position,"y")
+  gui.add(directinalLight.position,"z")
 
   //For å se posisjonen på lyset
-  const plHelper = new THREE.PointLightHelper(pointLight, 2)
-  scene.add(plHelper)
+  const dlHelper = new THREE.DirectionalLightHelper(directinalLight, 2)
+  scene.add(dlHelper)
 
 
   //Bakgrunn
