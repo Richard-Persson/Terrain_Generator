@@ -24,7 +24,7 @@ window.onload = function init(){
     75,
     window.innerWidth/window.innerHeight,
     0.1,
-    100,
+    300,
   )
 
   //Setter posisjonen
@@ -78,11 +78,11 @@ window.onload = function init(){
 
   
   //Plane
-  const planeGeometry = new THREE.PlaneGeometry(50,50,128,128)
+  const planeGeometry = new THREE.PlaneGeometry(100,100,128,128)
   const planeMaterial = new THREE.MeshStandardMaterial({
     map:texture,
     displacementMap:height,
-    displacementScale:10,
+    displacementScale:26,
   })
 
   const plane = new THREE.Mesh(planeGeometry,planeMaterial)
@@ -90,6 +90,7 @@ window.onload = function init(){
   plane.rotation.x = -0.5*Math.PI 
 
 
+  gui.add(planeMaterial, 'displacementScale', 0, 100).name('Displacement Scale');
 
 
   //Animerer scenen
