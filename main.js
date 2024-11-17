@@ -108,7 +108,6 @@ window.onload = function init(){
   //Animerer scenen
   function animate(time) {
 
-    requestAnimationFrame(animate)
     sphere.rotation.y = time/1000
 
     renderer.render(scene,camera)
