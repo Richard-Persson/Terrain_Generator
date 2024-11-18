@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
 
 
 window.onload = function init(){
@@ -9,11 +10,27 @@ window.onload = function init(){
   const renderer = new THREE.WebGLRenderer()
   document.body.appendChild(renderer.domElement)
 
+
+  //Loaders
+  const textureLoader = new THREE.TextureLoader()
+  const gltfLoader = new GLTFLoader()
+
+
   //Laste inn bilder
-  const loader = new THREE.TextureLoader()
-  const texture = loader.load('./static/terrain2.jpeg')
-  const height = loader.load('./static/heightMap2.png')
-  const sphereImage = loader.load('./static/terrain1.png')
+  const texture = textureLoader.load('./static/terrain2.jpeg')
+  const height = textureLoader.load('./static/heightMap2.png')
+  const sphereImage = textureLoader.load('./static/terrain1.png')
+
+  //Laste inn modeller 
+  const bush = gltfLoader.load('./models/bush/scene.gltf',(gltfScene)=>{
+
+    gltfScene.scene.position.set(-25,11,14)
+    gltfScene.scene.scale.set(5,5,5)
+    gltfScene.scene.rotation.set(10,0,0)
+
+    scene.add(gltfScene.scene)
+  })
+
 
   //GUI
   const gui = new dat.GUI()
