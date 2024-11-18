@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui'
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
+import {FirstPersonControls} from 'three/examples/jsm/controls/FirstPersonControls.js'
 
 
 window.onload = function init(){
@@ -15,6 +15,8 @@ window.onload = function init(){
   const textureLoader = new THREE.TextureLoader()
   const gltfLoader = new GLTFLoader()
 
+  //Klokke
+  const clock = new THREE.Clock()
 
   //Laste inn bilder
   const texture = textureLoader.load('./static/terrain2.jpeg')
@@ -45,6 +47,16 @@ window.onload = function init(){
 
   //Setter posisjonen
   camera.position.set(150,200,40)
+  camera.lookAt(1,1,1)
+
+    // Add pointer lock for better control
+  document.addEventListener('click', () => {
+    renderer.domElement.rejuestPointerLock();
+  });
+
+  document.addEventListener('pointerlockchange', () => {
+    controls.enabled = document.pointerLockElement === renderer.domElement;
+  });
 
   //Lager akse og grid for hjelp
   const gridHelper = new THREE.GridHelper(50)
@@ -53,9 +65,11 @@ window.onload = function init(){
   scene.add(axesHelper)
   axesHelper.position.y = 30
 
-  //Lager OrbitControls
-  const orbit = new OrbitControls(camera,renderer.domElement) 
+  //Lager OrbitControls - GAMMEL
+  //const orbit = new OrbitControls(camera,renderer.domElement) 
 
+  //controls
+  let controls = new FirstPersonControls(camera,renderer.domElement)
 
   
   //Lys
@@ -109,6 +123,7 @@ window.onload = function init(){
   function animate(time) {
 
 
+    controls.update(0.1)
     renderer.render(scene,camera)
   }
 
