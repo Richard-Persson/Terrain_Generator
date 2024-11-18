@@ -5,10 +5,12 @@ import {
     Scene,
     Mesh,
     TextureLoader,
+    MeshBasicMaterial,
     RepeatWrapping,
     DirectionalLight,
     Vector3,
     AxesHelper,
+    CubeGeometry,
 } from './lib/three.module.js';
 
 import Utilities from './lib/Utilities.js';
@@ -29,7 +31,7 @@ async function main() {
     const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     const renderer = new WebGLRenderer({ antialias: true });
-    renderer.setClearColor(0xffffff);
+    renderer.setClearColor('#96c9d7')
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     renderer.shadowMap.enabled = true;
@@ -107,6 +109,21 @@ async function main() {
     snowyRockTexture.wrapS = RepeatWrapping;
     snowyRockTexture.wrapT = RepeatWrapping;
     snowyRockTexture.repeat.set(1500 / width, 1500 / width);
+
+    const waterTexture = new TextureLoader().load('resources/textures/water.jpg')
+    
+  const waterMaterial = new MeshBasicMaterial({
+    map: waterTexture
+  }) 
+  const waterGeometry = new CubeGeometry(100,100,10,10)
+
+  const water = new Mesh(waterGeometry,waterMaterial)
+  scene.add(water)
+
+  water.rotation.x = -0.5*Math.PI
+  water.position.y = -1 
+
+ 
 
 
     const splatMap = new TextureLoader().load('resources/images/splatmap_01.png');
