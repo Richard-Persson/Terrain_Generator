@@ -19,7 +19,6 @@ window.onload = function init(){
   //Laste inn bilder
   const texture = textureLoader.load('./static/terrain2.jpeg')
   const height = textureLoader.load('./static/heightMap2.png')
-  const sphereImage = textureLoader.load('./static/terrain1.png')
 
   //Laste inn modeller 
   const bush = gltfLoader.load('./models/bush/scene.gltf',(gltfScene)=>{
@@ -41,17 +40,18 @@ window.onload = function init(){
     75,
     window.innerWidth/window.innerHeight,
     0.1,
-    300,
+    500,
   )
 
   //Setter posisjonen
-  camera.position.set(30,40,40)
+  camera.position.set(150,200,40)
 
   //Lager akse og grid for hjelp
   const gridHelper = new THREE.GridHelper(50)
   scene.add(gridHelper)
-  const axesHelper = new THREE.AxesHelper(5)
+  const axesHelper = new THREE.AxesHelper(300)
   scene.add(axesHelper)
+  axesHelper.position.y = 30
 
   //Lager OrbitControls
   const orbit = new OrbitControls(camera,renderer.domElement) 
@@ -62,7 +62,7 @@ window.onload = function init(){
   const directinalLight = new THREE.DirectionalLight(0xffffff,1)
   scene.add(directinalLight)
   directinalLight.position.x = 1
-  directinalLight.position.y =20 
+  directinalLight.position.y =100 
   directinalLight.position.z = 1
   
   //GUI for lys posisjon
@@ -79,27 +79,16 @@ window.onload = function init(){
   renderer.setClearColor('#96c9d7')
 
 
-  //Sphere
-  const sphereGeometry = new THREE.SphereGeometry()
-  const sphereMaterial = new THREE.MeshPhongMaterial({
-    color:'red',
-    map:sphereImage,
-  })
-  const sphere = new THREE.Mesh(sphereGeometry,sphereMaterial)
-  scene.add(sphere)
-  sphere.position.y = 5
-  sphere.position.x = 3
-
-  
+    
 
   
   //Plane
 
   const uniforms = {
     bumpTexture:{value: height},
-    bumpScale: {value: 26},
+    bumpScale: {value: 80},
   }
-  const planeGeometry = new THREE.PlaneGeometry(100,100,128,128)
+  const planeGeometry = new THREE.PlaneGeometry(500,500,64,64)
   //NY
   const planeMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
@@ -107,14 +96,8 @@ window.onload = function init(){
     fragmentShader: document.getElementById('fragmentShader').textContent,
 
   })
-  //GAMMEL
-  /**const planeMaterial = new THREE.MeshStandardMaterial({
-    map:texture,
-    displacementMap:height,
-    displacementScale:26,
-  })**/
 
-  const plane = new THREE.Mesh(planeGeometry,planeMaterial)
+   const plane = new THREE.Mesh(planeGeometry,planeMaterial)
   scene.add(plane)
   plane.rotation.x = -0.5*Math.PI 
 
@@ -125,7 +108,6 @@ window.onload = function init(){
   //Animerer scenen
   function animate(time) {
 
-    sphere.rotation.y = time/1000
 
     renderer.render(scene,camera)
   }
