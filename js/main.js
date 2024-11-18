@@ -213,6 +213,7 @@ async function main() {
 
     //Bytte retning av og til
     if (Math.random() < 0.01) {
+      changeDirection()
     }
 
   }
