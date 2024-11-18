@@ -137,15 +137,15 @@ async function main() {
         'resources/models/kenney_nature_kit/tree_thin.glb',
         // called when resource is loaded
         (object) => {
-            for (let x = -50; x < 50; x += 8) {
-                for (let z = -50; z < 50; z += 8) {
+            for (let x = -50; x < 50; x += 4) {
+                for (let z = -50; z < 50; z += 4) {
                     
                     const px = x + 1 + (6 * Math.random()) - 3;
                     const pz = z + 1 + (6 * Math.random()) - 3;
 
                     const height = terrainGeometry.getHeightAt(px, pz);
 
-                    if (height < 5) {
+                    if (height < 6 && height > 4) {
                         const tree = object.scene.children[0].clone();
 
                         tree.traverse((child) => {
