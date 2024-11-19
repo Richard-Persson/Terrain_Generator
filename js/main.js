@@ -14,6 +14,7 @@ import {
     Vector2,
     AxesHelper,
     CubeGeometry,
+    Fog,
 } from './lib/three.module.js';
 
 import Utilities from './lib/Utilities.js';
@@ -27,6 +28,8 @@ import { SimplexNoise } from './lib/SimplexNoise.js';
 async function main() {
 
     const scene = new Scene();
+    //Legger til tåke
+    scene.fog = new Fog( 0xcccccc, 10, 60)
 
     const axesHelper = new AxesHelper(15);
     scene.add(axesHelper);
