@@ -25,6 +25,18 @@ import TerrainBufferGeometry from './terrain/TerrainBufferGeometry.js';
 import { GLTFLoader } from './loaders/GLTFLoader.js';
 import { SimplexNoise } from './lib/SimplexNoise.js';
 
+let man = null;
+
+const move = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    speed: 0.1, // Adjust movement speed
+};
+
+let loaderMan = null;
+
 async function main() {
 
     const scene = new Scene();
@@ -42,6 +54,21 @@ async function main() {
 
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
+
+    //Eventlisteners for bevegelse
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyW') move.forward = true;
+        if (e.code === 'KeyS') move.backward = true;
+        if (e.code === 'KeyA') move.left = true;
+        if (e.code === 'KeyD') move.right = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'KeyW') move.forward = false;
+        if (e.code === 'KeyS') move.backward = false;
+        if (e.code === 'KeyA') move.left = false;
+        if (e.code === 'KeyD') move.right = false;
+    });
 
     /**
      * Handle window resize:
@@ -174,6 +201,43 @@ async function main() {
 
     })
 
+    let mixerMan;
+    let animations = [];
+    //Bussinessman
+    loaderMan = new GLTFLoader();
+    loaderMan.load('resources/models/business_man_-_low_polygon_game_character.glb',
+        (gltf) => {
+            man = gltf.scene;
+            animations = gltf.animations;
+            man.position.set(10, 5, 10);
+            man.scale.set(1.5, 1.5, 1.5);
+
+            mixerMan = new AnimationMixer(man);
+            console.log(gltf.animations);
+
+            if (animations.length > 0) {
+                const idleAction = mixerMan.clipAction(animations[0]);
+                idleAction.play();
+            }
+
+
+            man.traverse((child) => {
+                if (child.isMesh){
+                    child.castShadow = true;
+                    child.recieveShadow = true;
+                }
+            });
+            scene.add(man);
+
+        },
+        (xhr) => {
+            console.log('Man model: ${(xhr.loaded / xhr.total) * 100}% loaded');
+        },
+        (error) => {
+            console.error('Error loading model', error);
+        });
+
+
   function changeDirection() {
     const angle = Math.random() * Math.PI * 2; 
     direction.set(Math.cos(angle), Math.sin(angle));
@@ -270,25 +334,33 @@ async function main() {
      * Set up camera controller:
      */
 
+
+
     const mouseLookController = new MouseLookController(camera);
 
     // We attach a click lister to the canvas-element so that we can request a pointer lock.
     // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
     const canvas = renderer.domElement;
 
+    /**Pointerlock
     canvas.addEventListener('click', () => {
         canvas.requestPointerLock();
     });
+    */
 
-    let yaw = 0;
+    /**let yaw = 0;
     let pitch = 0;
+        */
     const mouseSensitivity = 0.001;
 
+    /**
     function updateCamRotation(event) {
         yaw += event.movementX * mouseSensitivity;
         pitch += event.movementY * mouseSensitivity;
     }
+        */
 
+    /**
     document.addEventListener('pointerlockchange', () => {
         if (document.pointerLockElement === canvas) {
             canvas.addEventListener('mousemove', updateCamRotation, false);
@@ -296,6 +368,7 @@ async function main() {
             canvas.removeEventListener('mousemove', updateCamRotation, false);
         }
     });
+     */
 
     let move = {
         forward: false,
@@ -305,6 +378,7 @@ async function main() {
         speed: 0.01
     };
 
+    /**keydown
     window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyW') {
             move.forward = true;
@@ -337,12 +411,67 @@ async function main() {
         }
     });
 
+        */
     const velocity = new Vector3(0.0, 0.0, 0.0);
     const clock = new Clock();
 
     let then = performance.now();
+    let currentAction = null;
+    function moveMan(deltaTime,loader) {
+
+        if (!man || animations.length === 0) return;
+        const speed = 5;
+
+        const moveDirection = new Vector3(0,0,0);
+        let newAction = null;
+
+        if (move.forward) {
+            moveDirection.z += 1;
+            newAction = mixerMan.clipAction(animations[24]);
+        } else if (move.backward) {
+            moveDirection.z -= 1;
+            newAction = mixerMan.clipAction(animations[24]);
+        } else if (move.left) {
+            moveDirection.x += 1;
+            newAction = mixerMan.clipAction(animations[24]);
+        } else if (move.right) {
+            moveDirection.x -= 1;
+            newAction = mixerMan.clipAction(animations[24]);
+        } else {
+
+            newAction = mixerMan.clipAction(animations[0]);
+        }
+
+        if (currentAction !== newAction){
+            if (currentAction) currentAction.fadeOut(0.2);
+            newAction.reset().fadeIn(0.2).play();
+            currentAction = newAction;
+        }
+
+        if(mixer) mixerMan.update(deltaTime);
+
+        moveDirection.normalize().multiplyScalar(speed*deltaTime);
+        const newPosition = man.position.clone().add(moveDirection);
+
+        newPosition.x = Math.min(Math.max(newPosition.x, bounds.minX), bounds.maxX);
+        newPosition.z = Math.min(Math.max(newPosition.z, bounds.minZ), bounds.maxZ);
+
+        const terrainHeight = terrainGeometry.getHeightAt(newPosition.x, newPosition.z);
+        newPosition.y = terrainHeight;
+
+        man.position.set(newPosition.x, newPosition.y, newPosition.z);
+
+        if (moveDirection.length() > 0) {
+            const angle = Math.atan2(moveDirection.x, moveDirection.z);
+            man.rotation.y = angle;
+        }
+
+
+    }
+
     function loop(now) {
 
+        /**
         const delta = now - then;
         then = now;
 
@@ -370,15 +499,31 @@ async function main() {
         mouseLookController.update(pitch, yaw);
         yaw = 0;
         pitch = 0;
+        */
 
-        //Update animations
-        if(mixer)mixer.update(0.002)
-        moveWolf(clock.getDelta())
+
+        const delta = clock.getDelta();
+        then = now;
+        moveWolf(delta);
+        moveMan(delta, loaderMan);
+        if(mixer)mixer.update(delta)
+
+        if(man){
+
+            const moveDirection = new Vector3();
+
+            const offset = new Vector3(0,5,-10);
+            const targetPosition = man.position.clone().add(offset);
+
+            camera.position.lerp(targetPosition, 0.1);
+
+            camera.lookAt(man.position);
+        }
           
-        // apply rotation to velocity vector, and translate moveNode with it.
+        /** apply rotation to velocity vector, and translate moveNode with it.
         velocity.applyQuaternion(camera.quaternion);
         camera.position.add(velocity);
-
+        */
         // render scene:
         renderer.render(scene, camera);
 
@@ -391,3 +536,5 @@ async function main() {
 }
 
 main(); // Start application
+
+
