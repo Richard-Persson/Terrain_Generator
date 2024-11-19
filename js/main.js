@@ -418,7 +418,6 @@ async function main() {
         const delta = clock.getDelta();
         then = now;
         moveMan(delta, loaderMan);
-        if(mixer)mixer.update(delta)
 
         if(man){
 
