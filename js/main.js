@@ -79,6 +79,41 @@ async function main() {
      *  - update projection matrix
      *  - update renderer size
      */
+
+     let mixerMan;
+    let animations = [];
+    //Bussinessman
+    loaderMan = new GLTFLoader();
+    loaderMan.load('resources/models/business_man_-_low_polygon_game_character.glb',
+        (gltf) => {
+            man = gltf.scene;
+            animations = gltf.animations;
+            man.position.set(10, 5, 10);
+            man.scale.set(1.5, 1.5, 1.5);
+            mixerMan = new AnimationMixer(man);
+            console.log(gltf.animations);
+            if (animations.length > 0) {
+                const idleAction = mixerMan.clipAction(animations[0]);
+                idleAction.play();
+            }
+            man.traverse((child) => {
+                if (child.isMesh){
+                    child.castShadow = true;
+                    child.recieveShadow = true;
+                }
+            });
+            scene.add(man);
+        },
+        (xhr) => {
+            console.log('Man model: ${(xhr.loaded / xhr.total) * 100}% loaded');
+        },
+        (error) => {
+            console.error('Error loading model', error);
+        });
+
+
+
+  
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -327,11 +362,13 @@ async function main() {
         */
     const velocity = new Vector3(0.0, 0.0, 0.0);
     const clock = new Clock();
+  let mixer;
 
     let then = performance.now();
     let currentAction = null;
     function moveMan(deltaTime,loader) {
 
+     mixer = new AnimationMixer(man)
         if (!man || animations.length === 0) return;
         const speed = 5;
 
@@ -419,12 +456,12 @@ async function main() {
         then = now;
         moveMan(delta, loaderMan);
 
+        wolves.forEach((wolf ) => wolf.move(delta))
         if(man){
 
 
        
         //Update animations
-        wolves.forEach((wolf ) => wolf.move(delta))
             const moveDirection = new Vector3();
 
             const offset = new Vector3(0,5,-10);
