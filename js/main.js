@@ -15,6 +15,7 @@ import {
     AxesHelper,
     CubeGeometry,
     Fog,
+    LOD,
 } from './lib/three.module.js';
 
 import {Wolf} from './Wolf.js'
@@ -233,38 +234,59 @@ async function main() {
      * Add trees
      */
 
+    const trees = [];
+
+// Last inn tre-modellen én gang
     loader.load(
-        // resource URL
         'resources/models/kenney_nature_kit/tree_thin.glb',
-        // called when resource is loaded
         (object) => {
-            for (let x = -50; x < 50; x += 4) {
-                for (let z = -50; z < 50; z += 4) {
-                    
+            // Lagre de teksturerte og uteksturerte versjonene av treet for gjenbruk
+            const highDetailTree = object.scene.children[0].clone();
+            const lowDetailTree = object.scene.children[0].clone();
+
+            // Konfigurer høy-detaljert tre (teksturert)
+            highDetailTree.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            // Konfigurer lav-detaljert tre (uten tekstur)
+            lowDetailTree.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    child.material = new MeshBasicMaterial({ color: 0x1e400b });
+                }
+            });
+
+            // Plasser flere instanser av LOD-objektene i scenen
+            for (let x = -50; x < 50; x += 3) {
+                for (let z = -50; z < 50; z += 3) {
+
                     const px = x + 1 + (6 * Math.random()) - 3;
                     const pz = z + 1 + (6 * Math.random()) - 3;
-
                     const height = terrainGeometry.getHeightAt(px, pz);
 
-                    if (height < 6 && height > 4) {
-                        const tree = object.scene.children[0].clone();
+                    if (height < 6.5 && height > 4) {
+                        // Opprett LOD-objekt for treet
+                        const treeLOD = new LOD();
 
-                        tree.traverse((child) => {
-                            if (child.isMesh) {
-                                child.castShadow = true;
-                                child.receiveShadow = true;
-                            }
-                        });
-                        
-                        tree.position.x = px;
-                        tree.position.y = height - 0.01;
-                        tree.position.z = pz;
+                        // Legg til detaljnivåene til LOD-objektet
+                        treeLOD.addLevel(highDetailTree.clone(), 10);   // Tekstur vises innenfor 10 enheter
+                        treeLOD.addLevel(lowDetailTree.clone(), 15);    // Uten tekstur utenfor 15 enheter
 
-                        tree.rotation.y = Math.random() * (2 * Math.PI);
+                        // Sett posisjon og rotering for treet
+                        treeLOD.position.set(px, height - 0.01, pz);
+                        treeLOD.rotation.y = Math.random() * (2 * Math.PI);
+                        treeLOD.scale.multiplyScalar(3 + Math.random() * 2);
 
-                        tree.scale.multiplyScalar(1.5 + Math.random() * 1);
+                        // Plasser LOD-objektet i scenen
+                        scene.add(treeLOD);
 
-                        scene.add(tree);
+
+                        trees.push(treeLOD);
                     }
 
                 }
