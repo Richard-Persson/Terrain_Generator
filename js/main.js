@@ -17,6 +17,8 @@ import {
     Fog,
 } from './lib/three.module.js';
 
+import {Wolf} from './Wolf.js'
+
 import Utilities from './lib/Utilities.js';
 import MouseLookController from './controls/MouseLookController.js';
 
@@ -28,6 +30,7 @@ import { SimplexNoise } from './lib/SimplexNoise.js';
 async function main() {
 
     const scene = new Scene();
+
     //Legger til tåke
     scene.fog = new Fog( 0xcccccc, 10, 60)
 
@@ -116,7 +119,7 @@ async function main() {
     snowyRockTexture.wrapT = RepeatWrapping;
     snowyRockTexture.repeat.set(1500 / width, 1500 / width);
 
-    const waterTexture = new TextureLoader().load('resources/textures/water.jpg')
+  const waterTexture = new TextureLoader().load('resources/textures/water.jpg')
     
   const waterMaterial = new MeshBasicMaterial({
     map: waterTexture
@@ -147,79 +150,26 @@ async function main() {
     terrain.receiveShadow = true;
 
     scene.add(terrain);
+    // instantiate a GLTFLoader:
+    const loader = new GLTFLoader();
+    const wolves = []
+    let numWolves = 30;
+    const bounds = { minX: -49, maxX: 49, minZ: -49, maxZ: 49 }; // Terrain boundaries
+
+
+    // Create multiple wolves
+    for (let i = 0; i < numWolves; i++) {
+      const initialX = Math.random() * (bounds.maxX - bounds.minX) + bounds.minX;
+      const initialZ = Math.random() * (bounds.maxZ - bounds.minZ) + bounds.minZ;
+      const initialPosition = new Vector3(initialX, 10, initialZ);
+
+      const wolf = new Wolf(loader, scene, initialPosition, terrainGeometry, bounds);
+     wolves.push(wolf);
+    }
 
     /**
      * Add trees
      */
-
-    // instantiate a GLTFLoader:
-    const loader = new GLTFLoader();
-    let mixer;
-    let wolf = null;
-    let wolf_Position = new Vector3(0, 10, 4);
-    const bounds = { minX: -49, maxX: 49, minZ: -49, maxZ: 49 }; // Terrain boundaries
-    let direction = new Vector2(1, 0); // Initial direction (2D vector for X and Z)
-    loader.load('resources/models/wolf.glb',
-    (object)=>{
-
-
-      wolf = object.scene
-      wolf.position.set(wolf_Position.x,wolf_Position.y,wolf_Position.z)
-      
-      mixer = new AnimationMixer(wolf)
-      mixer.clipAction(object.animations[0]).play();
-
-      scene.add(wolf)
-
-
-    })
-
-  function changeDirection() {
-    const angle = Math.random() * Math.PI * 2; 
-    direction.set(Math.cos(angle), Math.sin(angle));
-  }
-
-  function moveWolf(deltaTime){
-    if(!wolf) return
-    const speed = 8; 
-
-      wolf_Position.x += direction.x * speed * deltaTime;
-      wolf_Position.z += direction.y * speed * deltaTime;
-
-    if (wolf_Position.x < bounds.minX || wolf_Position.x > bounds.maxX) {
-      direction.x = -direction.x; 
-      wolf_Position.x = Math.min(Math.max(wolf_Position.x, bounds.minX), bounds.maxX);
-      changeDirection();
-    }
-    if (wolf_Position.z < bounds.minZ || wolf_Position.z > bounds.maxZ) {
-      direction.y = -direction.y;
-      wolf_Position.z = Math.min(Math.max(wolf_Position.z, bounds.minZ), bounds.maxZ);
-      changeDirection(); 
-    }
-
-    //Endrer posisjon ifht vann
-    if (wolf_Position.y < 4 ) {
-      direction.y = -direction.j;
-      wolf_Position.z = Math.min(Math.max(wolf_Position.z, bounds.minZ), bounds.maxZ);
-      changeDirection(); 
-    }
-
-     const terrainHeight = terrainGeometry.getHeightAt(wolf_Position.x, wolf_Position.z);
-     wolf_Position.y = terrainHeight; 
-
-     wolf.position.set(wolf_Position.x, wolf_Position.y, wolf_Position.z); // Update the wolf's position
-
-     const angle = Math.atan2(direction.x, direction.y); 
-     wolf.rotation.y = angle; 
-
-    if (mixer) mixer.update(deltaTime);
-
-    //Bytte retning av og til
-    if (Math.random() < 0.01) {
-      changeDirection()
-    }
-
-  }
 
     loader.load(
         // resource URL
@@ -371,9 +321,9 @@ async function main() {
         yaw = 0;
         pitch = 0;
 
+        const deltaTime = clock.getDelta();
         //Update animations
-        if(mixer)mixer.update(0.002)
-        moveWolf(clock.getDelta())
+        wolves.forEach((wolf ) => wolf.move(deltaTime))
           
         // apply rotation to velocity vector, and translate moveNode with it.
         velocity.applyQuaternion(camera.quaternion);
