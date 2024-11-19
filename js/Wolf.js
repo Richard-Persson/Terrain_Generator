@@ -27,6 +27,9 @@ export class Wolf{
       this.mixer = new AnimationMixer(this.model);
       this.mixer.clipAction(object.animations[0]).play();
 
+      //endrer størrelse
+      this.model.scale.set(1.7, 1.7, 1.7);
+
       scene.add(this.model);
 
     })

@@ -46,7 +46,7 @@ async function main() {
     const scene = new Scene();
 
     //Legger til tåke
-    scene.fog = new Fog( 0xcccccc, 10, 60)
+    scene.fog = new Fog( 0x0b0d15, 5, 20)
 
     const axesHelper = new AxesHelper(15);
     scene.add(axesHelper);
@@ -54,7 +54,7 @@ async function main() {
     const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     const renderer = new WebGLRenderer({ antialias: true });
-    renderer.setClearColor('#96c9d7')
+    renderer.setClearColor('#FFFFF')
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     renderer.shadowMap.enabled = true;
@@ -145,7 +145,7 @@ async function main() {
     /**
      * Add light
      */
-    const directionalLight = new DirectionalLight(0xffffff);
+    const directionalLight = new DirectionalLight(0x4a4a4a, 1);
     directionalLight.position.set(300, 400, 0);
 
     directionalLight.castShadow = true;
@@ -232,6 +232,9 @@ async function main() {
     const loader = new GLTFLoader();
     const wolves = []
     let numWolves = 30;
+
+
+
     const bounds = { minX: -49, maxX: 49, minZ: -49, maxZ: 49 }; // Terrain boundaries
 
 
@@ -407,27 +410,29 @@ async function main() {
 
      mixer = new AnimationMixer(man)
         if (!man || animations.length === 0) return;
-        const speed = 5;
+        const speed = 3;
 
         const moveDirection = new Vector3(0,0,0);
         let newAction = null;
 
         if (move.forward) {
-            moveDirection.z += 1;
-            newAction = mixerMan.clipAction(animations[24]);
-        } else if (move.backward) {
             moveDirection.z -= 1;
             newAction = mixerMan.clipAction(animations[24]);
-        } else if (move.left) {
-            moveDirection.x += 1;
+        }
+        if (move.backward) {
+            moveDirection.z += 1;
             newAction = mixerMan.clipAction(animations[24]);
-        } else if (move.right) {
+        }
+        if (move.left) {
             moveDirection.x -= 1;
             newAction = mixerMan.clipAction(animations[24]);
-        } else {
-
-            newAction = mixerMan.clipAction(animations[0]);
         }
+        if (move.right) {
+            moveDirection.x += 1;
+            newAction = mixerMan.clipAction(animations[24]);
+        }
+
+        if (!move.right && !move.forward && !move.backward && !move.left) newAction = mixerMan.clipAction(animations[0]);
 
         if (currentAction !== newAction){
             if (currentAction) currentAction.fadeOut(0.2);
@@ -438,6 +443,14 @@ async function main() {
         if(mixer) mixerMan.update(deltaTime);
 
         moveDirection.normalize().multiplyScalar(speed*deltaTime);
+
+
+        //Legge til iht, kamera.
+        const cameraDirectionMatrix = new Matrix4();
+        cameraDirectionMatrix.extractRotation(camera.matrix);
+        moveDirection.applyMatrix4(cameraDirectionMatrix);
+
+
         const newPosition = man.position.clone().add(moveDirection);
 
         newPosition.x = Math.min(Math.max(newPosition.x, bounds.minX), bounds.maxX);
@@ -455,7 +468,7 @@ async function main() {
 
 
     }
-    let cameraOffset = new Vector3(0,5,-10);
+    let cameraOffset = new Vector3(0,5,-3);
     let cameraRotation = new Vector2(0,0);
     function loop(now) {
 
@@ -507,8 +520,11 @@ async function main() {
 
             camera.position.lerp(cameraPosition, 0.1);
 
+            const positionLook = man.position.clone();
+            positionLook.y += 2.5;
+            positionLook.x += 0;
 
-            camera.lookAt(man.position);
+            camera.lookAt(positionLook);
         }
 
           
