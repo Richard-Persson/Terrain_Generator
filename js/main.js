@@ -468,6 +468,17 @@ async function main() {
 
 
     }
+
+    function checkCollision(pos1, pos2, size = 1){
+        return (
+            Math.abs(pos1.x-pos2.x) < size &&
+            Math.abs(pos2.y-pos2.y) < size &&
+            Math.abs(pos1.z-pos2.z) < size
+        );
+
+    }
+
+
     let cameraOffset = new Vector3(0,5,-3);
     let cameraRotation = new Vector2(0,0);
     function loop(now) {
@@ -510,6 +521,13 @@ async function main() {
         wolves.forEach((wolf ) => wolf.move(delta))
         if(man){
 
+            wolves.forEach((wolf) => {
+                if (wolf.model){
+                    if (checkCollision(man.position, wolf.model.position)){
+                        console.log("Du kolliderte med ulven!");
+                    }
+                }
+            })
 
             const rotationMatrix = new Matrix4().makeRotationY(cameraRotation.x);
             const rotatedOffset = cameraOffset.clone().applyMatrix4(rotationMatrix);
