@@ -16,6 +16,7 @@ import {
     CubeGeometry,
     Fog,
     LOD,
+    Matrix4,
 } from './lib/three.module.js';
 
 import {Wolf} from './Wolf.js'
@@ -73,6 +74,19 @@ async function main() {
         if (e.code === 'KeyA') move.left = false;
         if (e.code === 'KeyD') move.right = false;
     });
+    let isDragging = false;
+    window.addEventListener('mousedown', (e) => {isDragging = true});
+    window.addEventListener('mouseup', (e) => {isDragging = false});
+    window.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+            const sensitivity = 0.005;
+            cameraRotation.x -= event.movementX * sensitivity;
+            cameraRotation.y -= event.movementY * sensitivity;
+
+            cameraRotation.y = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, cameraRotation.y));
+        }
+    });
+
 
     /**
      * Handle window resize:
@@ -81,7 +95,8 @@ async function main() {
      *  - update renderer size
      */
 
-     let mixerMan;
+
+    let mixerMan;
     let animations = [];
     //Bussinessman
     loaderMan = new GLTFLoader();
@@ -440,7 +455,8 @@ async function main() {
 
 
     }
-
+    let cameraOffset = new Vector3(0,5,-10);
+    let cameraRotation = new Vector2(0,0);
     function loop(now) {
 
         /**
@@ -482,14 +498,15 @@ async function main() {
         if(man){
 
 
-       
-        //Update animations
-            const moveDirection = new Vector3();
+            const rotationMatrix = new Matrix4().makeRotationY(cameraRotation.x);
+            const rotatedOffset = cameraOffset.clone().applyMatrix4(rotationMatrix);
 
-            const offset = new Vector3(0,5,-10);
-            const targetPosition = man.position.clone().add(offset);
+            rotatedOffset.y += Math.sin(cameraRotation.y) * cameraOffset.length();
 
-            camera.position.lerp(targetPosition, 0.1);
+            const cameraPosition = man.position.clone().add(rotatedOffset);
+
+            camera.position.lerp(cameraPosition, 0.1);
+
 
             camera.lookAt(man.position);
         }
