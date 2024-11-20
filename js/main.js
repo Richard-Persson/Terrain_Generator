@@ -46,7 +46,7 @@ async function main() {
     const scene = new Scene();
 
     //Legger til tåke
-    scene.fog = new Fog( 0x0b0d15, 5, 20)
+    scene.fog = new Fog(0x0b0d15, 5, 20)//0x0b0d15,
 
     const axesHelper = new AxesHelper(15);
     scene.add(axesHelper);
@@ -104,7 +104,7 @@ async function main() {
         (gltf) => {
             man = gltf.scene;
             animations = gltf.animations;
-            man.position.set(10, 5, 10);
+            man.position.set(0, 0,0 );
             man.scale.set(1.5, 1.5, 1.5);
             mixerMan = new AnimationMixer(man);
             console.log(gltf.animations);
@@ -238,17 +238,43 @@ async function main() {
     const bounds = { minX: -49, maxX: 49, minZ: -49, maxZ: 49 }; // Terrain boundaries
 
 
-    // Create multiple wolves
+    /**
+     * Lager ulver
+     */
     for (let i = 0; i < numWolves; i++) {
       const initialX = Math.random() * (bounds.maxX - bounds.minX) + bounds.minX;
       const initialZ = Math.random() * (bounds.maxZ - bounds.minZ) + bounds.minZ;
       const initialPosition = new Vector3(initialX, 10, initialZ);
 
       const wolf = new Wolf(loader, scene, initialPosition, terrainGeometry, bounds);
-     wolves.push(wolf);
+      wolves.push(wolf);
     }
-
     /**
+     * Lager Sau
+     */
+
+  let sheep = null;
+  loader.load('resources/models/sheep.glb',(object)=>{
+
+
+    sheep = object.scene
+    
+
+    let px, pz ;
+    let height = 0
+    while(height<4){
+    px = Math.random() * (50 - (-50)) + (-50)+clock.getElapsedTime(); 
+    pz = Math.random() * (50 - (-50)) + (-50)+clock.getElapsedTime(); 
+    height = terrainGeometry.getHeightAt(px, pz);
+    }
+      sheep.position.set(px,height,pz);
+      sheep.scale.set(10,10,10)
+
+
+
+    scene.add(sheep)
+  })
+     /**
      * Add trees
      */
 
@@ -518,16 +544,25 @@ async function main() {
         then = now;
         moveMan(delta, loaderMan);
 
+        //Kollisjon
         wolves.forEach((wolf ) => wolf.move(delta))
         if(man){
 
             wolves.forEach((wolf) => {
                 if (wolf.model){
                     if (checkCollision(man.position, wolf.model.position)){
+                        man.position.set(0,10,0)
                         console.log("Du kolliderte med ulven!");
                     }
                 }
             })
+        if(sheep){
+            if(checkCollision(man.position, sheep.position)){
+
+
+                        console.log("Du kolliderte med sau");
+      }
+      }
 
             const rotationMatrix = new Matrix4().makeRotationY(cameraRotation.x);
             const rotatedOffset = cameraOffset.clone().applyMatrix4(rotationMatrix);
