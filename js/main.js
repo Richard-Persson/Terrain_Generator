@@ -53,7 +53,7 @@ async function main() {
   const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
   const renderer = new WebGLRenderer({ antialias: true });
-  renderer.setClearColor('#FFFFF')
+  renderer.setClearColor('#000000');
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   renderer.shadowMap.enabled = true;
@@ -305,7 +305,7 @@ async function main() {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-          child.material = new MeshBasicMaterial({ color: 0x1e400b });
+          child.material = new MeshBasicMaterial({color: 0x061f05});
         }
       });
 
