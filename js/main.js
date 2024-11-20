@@ -15,6 +15,8 @@ import {
   AxesHelper,
   CubeGeometry,
   Fog,
+  Color,
+  PointLight,
   LOD,
   Matrix4,
 } from './lib/three.module.js';
@@ -259,6 +261,13 @@ async function main() {
 
 
     sheep = object.scene
+    sheep.traverse((child) => {
+      if (child.isMesh) {
+         child.material.emissive = new Color(0xffd700); // Golden 
+         child.material.emissiveMap = child.material.map; // Use the texture for the glow
+         child.material.emissiveIntensity = 1.5; // Brightness level
+      }
+    });
 
 
     let px, pz ;
@@ -269,7 +278,7 @@ async function main() {
       height = terrainGeometry.getHeightAt(px, pz);
     }
     sheep.position.set(px,height,pz);
-    sheep.scale.set(10,10,10)
+    sheep.scale.set(2,2,2)
 
 
 
@@ -305,7 +314,7 @@ async function main() {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-          child.material = new MeshBasicMaterial({color: 0x061f05});
+          child.material = new MeshBasicMaterial({color: 0x00000});
         }
       });
 
