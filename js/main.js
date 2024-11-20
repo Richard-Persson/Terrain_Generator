@@ -43,6 +43,7 @@ async function main() {
 
   const scene = new Scene();
 
+
   //Legger til tåke
   scene.fog = new Fog(0x0b0d15, 5, 20)
 
@@ -434,6 +435,9 @@ async function main() {
 
   }
 
+  /**
+   * Bakgrunnsmusikk
+   */
 
   let cameraOffset = new Vector3(0,5,-3);
   let cameraRotation = new Vector2(0,0);
@@ -492,6 +496,22 @@ async function main() {
 
 }
 
-main(); // Start application
+document.getElementById('startGameButton').addEventListener('click', () => {
+
+  document.getElementById('startGameButton').style.display = 'none';
+
+
+  main();
+
+
+  addBackgroundMusic();
+});
+function addBackgroundMusic() {
+  const audio = new Audio('resources/sounds/music.mp3');
+  audio.loop = true;
+  audio.volume = 0.5;
+  audio.play();
+}
+
 
 
