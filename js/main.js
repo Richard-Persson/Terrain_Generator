@@ -49,15 +49,20 @@ async function main() {
   //Legger til tåke
   scene.fog = new Fog(0x0b0d15, 5, 20)
 
+  //Legger til en akse for og se x, y, z retninger
   const axesHelper = new AxesHelper(15);
   scene.add(axesHelper);
 
+  //Lager et perspektiv kamera med: FOV: 75, aspectRatio: skjermstørrelse, near: 0.1, far: 1000  
   const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
   const renderer = new WebGLRenderer({ antialias: true });
+
+  //Setter bakgrunnsfarge til #000000 som tilsvarer en mørk bakgrunn
   renderer.setClearColor('#000000');
   renderer.setSize(window.innerWidth, window.innerHeight);
 
+  //Legger til 'myk' skygge
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFSoftShadowMap;
 
@@ -75,6 +80,9 @@ async function main() {
     if (e.code === 'KeyA') move.left = false;
     if (e.code === 'KeyD') move.right = false;
   });
+
+
+  //Bestemmer hastigheten for rotasjon av kameraet
   let isDragging = false;
   window.addEventListener('mousedown', (e) => {isDragging = true});
   window.addEventListener('mouseup', (e) => {isDragging = false});
@@ -87,14 +95,6 @@ async function main() {
       cameraRotation.y = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, cameraRotation.y));
     }
   });
-
-
-  /**
-     * Handle window resize:
-     *  - update aspect ratio.
-     *  - update projection matrix
-     *  - update renderer size
-     */
 
 
   let mixerMan;
@@ -129,7 +129,14 @@ async function main() {
 
 
 
+  /**
+     * Handle window resize:
+     *  - update aspect ratio.
+     *  - update projection matrix
+     *  - update renderer size
+     */
 
+  //Passer på at kamera blir oppdatert iht vindustørrelse
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -175,9 +182,13 @@ async function main() {
     * We are using the async/await language constructs of Javascript:
     *  - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
     */
+
+  
+  //Definerer høyden på terrenget
   const heightmapImage = await Utilities.loadImage('resources/images/heightmap.png');
   const width = 100;
 
+  //Lager terrenget
   const terrainGeometry = new TerrainBufferGeometry({
     width,
     heightmapImage,
@@ -185,11 +196,13 @@ async function main() {
     height: 20
   });
 
+  //Laster inn gress tekstur
   const grassTexture = new TextureLoader().load('resources/textures/grass_02.png');
   grassTexture.wrapS = RepeatWrapping;
   grassTexture.wrapT = RepeatWrapping;
   grassTexture.repeat.set(5000 / width, 5000 / width);
 
+  //Laster inn snø tekstur
   const snowyRockTexture = new TextureLoader().load('resources/textures/snowy_rock_01.png');
   snowyRockTexture.wrapS = RepeatWrapping;
   snowyRockTexture.wrapT = RepeatWrapping;
@@ -214,8 +227,10 @@ async function main() {
 
 
 
+  //Definerer høyden til teksturene 
   const splatMap = new TextureLoader().load('resources/images/splatmap_01.png');
 
+  //Lager materialet til terrenget med snø og gress
   const terrainMaterial = new TextureSplattingMaterial({
     color: 0xffffff,
     shininess: 0,
@@ -225,10 +240,13 @@ async function main() {
 
   const terrain = new Mesh(terrainGeometry, terrainMaterial);
 
+  //Sier at terrenget skal både motta og gi skygge
   terrain.castShadow = true;
   terrain.receiveShadow = true;
 
   scene.add(terrain);
+
+
   // instantiate a GLTFLoader:
   const loader = new GLTFLoader();
   const wolves = []
@@ -236,12 +254,15 @@ async function main() {
 
 
 
+  //Setter begrensninger på hvor man kan gå
   const bounds = { minX: -49, maxX: 49, minZ: -49, maxZ: 49 }; // Terrain boundaries
 
 
   /*
    * Lager ulver
    */
+  
+  //Plasser et gitt antall ulver på en tilfeldig plass innenfor begrensningene
   for (let i = 0; i < numWolves; i++) {
     const initialX = Math.random() * (bounds.maxX - bounds.minX) + bounds.minX;
     const initialZ = Math.random() * (bounds.maxZ - bounds.minZ) + bounds.minZ;
@@ -270,6 +291,7 @@ async function main() {
     });
 
 
+    //Legger til "kunstig" tilfeldighet sånn at sauen ikke genereres på samme sted hele tiden
     let px, pz ;
     let height = 0
     while(height<4){
@@ -372,6 +394,7 @@ async function main() {
 
   let then = performance.now();
   let currentAction = null;
+  //Funksjon som håndterer bevegelse av mannen, spiller av animasjon når han beveger på seg
   function moveMan(deltaTime) {
 
     mixer = new AnimationMixer(man)
@@ -398,8 +421,10 @@ async function main() {
       newAction = mixerMan.clipAction(animations[24]);
     }
 
+    //Hvis mannen står stille ikke spill gå animasjon
     if (!move.right && !move.forward && !move.backward && !move.left) newAction = mixerMan.clipAction(animations[0]);
 
+    //Overgang fra stille til gåing
     if (currentAction !== newAction){
       if (currentAction) currentAction.fadeOut(0.2);
       newAction.reset().fadeIn(0.2).play();
@@ -415,7 +440,6 @@ async function main() {
     const cameraDirectionMatrix = new Matrix4();
     cameraDirectionMatrix.extractRotation(camera.matrix);
     moveDirection.applyMatrix4(cameraDirectionMatrix);
-
 
     const newPosition = man.position.clone().add(moveDirection);
 
@@ -443,10 +467,6 @@ async function main() {
     );
 
   }
-
-  /**
-   * Bakgrunnsmusikk
-   */
 
   let cameraOffset = new Vector3(0,5,-3);
   let cameraRotation = new Vector2(0,0);
@@ -505,6 +525,7 @@ async function main() {
 
 }
 
+//Etter vi har trykket på start, start spillet og spill av musikken
 document.getElementById('startGameButton').addEventListener('click', () => {
 
   document.getElementById('startGameButton').style.display = 'none';
@@ -515,6 +536,12 @@ document.getElementById('startGameButton').addEventListener('click', () => {
 
   addBackgroundMusic();
 });
+
+/*
+ *
+ * Bakgrunnsmusikk
+ */
+
 function addBackgroundMusic() {
   const audio = new Audio('resources/sounds/music.mp3');
   audio.loop = true;
