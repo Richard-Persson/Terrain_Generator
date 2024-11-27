@@ -19,6 +19,7 @@ import {
   PointLight,
   LOD,
   Matrix4,
+  CameraHelper,
 } from './lib/three.module.js';
 
 import {Wolf} from './Wolf.js'
@@ -155,11 +156,15 @@ async function main() {
   const directionalLight = new DirectionalLight(0x4a4a4a, 1);
   directionalLight.position.set(300, 400, 0);
 
-  directionalLight.castShadow = true;
+  //directionalLight.castShadow = true;
+  //directionalLight.shadow.camera.left = -50;   // Increase these values
+  //directionalLight.shadow.camera.right = 50;
+  //directionalLight.shadow.camera.top = 50;
+  //directionalLight.shadow.camera.bottom = -50;
 
   //Set up shadow properties for the light
-  directionalLight.shadow.mapSize.width = 512;
-  directionalLight.shadow.mapSize.height = 512;
+  directionalLight.shadow.mapSize.width = 2048;
+  directionalLight.shadow.mapSize.height = 2048;
   directionalLight.shadow.camera.near = 0.5;
   directionalLight.shadow.camera.far = 2000;
 
@@ -169,6 +174,8 @@ async function main() {
   directionalLight.target.position.set(0, 15, 0);
   scene.add(directionalLight.target);
 
+  const shadowHelper = new CameraHelper(directionalLight.shadow.camera);
+  scene.add(shadowHelper)
   camera.position.z = 70;
   camera.position.y = 55;
   camera.rotation.x -= Math.PI * 0.25;
